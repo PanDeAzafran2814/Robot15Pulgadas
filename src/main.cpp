@@ -34,7 +34,6 @@ bool isReverse = false;
 /*---------------------------------------------------------------------------*/
 
 void pre_auton(void) {
-
   vexcodeInit();
 }
 /*---------------------------------------------------------------------------*/
@@ -42,15 +41,18 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomousYellowGoal() {
-  FrontPincers.spinFor(reverse, 350, degrees);
+  FrontPincers.spinFor(reverse, 340, degrees);
   Drivetrain.drive(forward);
 }
 
 void autonomousBackYellowGoal() {
   while(1) {
-    if(FrontButton.pressing()) {
+      Control.Screen.print(RightWheels.rotation(degrees));
+      Control.Screen.newLine();
+    if(FrontButton.pressing() || RightWheels.rotation(degrees) > 800) {
       Drivetrain.stop();
-      FrontPincers.spinFor(forward, 180, degrees);
+      wait(250, msec);
+      FrontPincers.spinFor(forward, 140, degrees);
       Drivetrain.driveFor(reverse, 50, inches);
       break;
     }
@@ -68,6 +70,8 @@ void autonomous(void) {
   LeftWheels.setVelocity(75, percent);
   RightWheels.setVelocity(75, percent);
   FrontPincers.setVelocity(100, percent);
+  RightWheels.resetRotation();
+  LeftWheels.resetRotation();
   autonomousYellowGoal();
   autonomousBackYellowGoal();
   //autonomousPlatform();

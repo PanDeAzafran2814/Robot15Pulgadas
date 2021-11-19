@@ -4,6 +4,7 @@ using namespace vex;
 
 competition Competition;
 controller Control = controller(primary);
+brain Brain;
 // Front Pincers
 motor FrontLeftPincer = motor(PORT5, ratio36_1, false);
 motor FrontRightPincer = motor(PORT6, ratio36_1, true);
@@ -21,7 +22,8 @@ motor_group LeftWheels = motor_group(FrontLeftWheel, BackLeftWheel);
 motor_group RightWheels = motor_group(BackRightWheel, FrontRightWheel);
 motor_group BackPincers = motor_group(BackLeftPincer, BackRightPincer);
 motor_group FrontPincers = motor_group(FrontLeftPincer, FrontRightPincer);
-
+// Buttons
+bumper FrontButton = bumper(Brain.ThreeWirePort.A);
 // Drivetrain & Inertial Sensor
 inertial InertialSensor = inertial(PORT19);
 smartdrive Drivetrain = smartdrive(LeftWheels, RightWheels, InertialSensor, 319.19, 304.8, 304.8, mm, 1.6);
@@ -40,13 +42,19 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomousYellowGoal() {
-  Drivetrain.driveFor(forward, 40, inches);
   FrontPincers.spinFor(reverse, 350, degrees);
-  Drivetrain.driveFor(forward, 10, inches);
-  FrontPincers.spinFor(forward, 240, degrees);
-  LeftWheels.setVelocity(40, percent);
-  RightWheels.setVelocity(40, percent);
-  Drivetrain.driveFor(reverse, 29, inches);
+  Drivetrain.drive(forward);
+}
+
+void autonomousBackYellowGoal() {
+  while(1) {
+    if(FrontButton.pressing()) {
+      Drivetrain.stop();
+      FrontPincers.spinFor(forward, 180, degrees);
+      Drivetrain.driveFor(reverse, 50, inches);
+      break;
+    }
+  }
 }
 
 void autonomousPlatform() {
@@ -59,8 +67,10 @@ void autonomousPlatform() {
 void autonomous(void) {
   LeftWheels.setVelocity(75, percent);
   RightWheels.setVelocity(75, percent);
+  FrontPincers.setVelocity(100, percent);
   autonomousYellowGoal();
-  autonomousPlatform();
+  autonomousBackYellowGoal();
+  //autonomousPlatform();
 }
 /*---------------------------------------------------------------------------*/
 /*                              User Control Task                            */
@@ -78,21 +88,20 @@ void changeMovement() {
 void leftMovement() {
   if(Control.Axis3.value() != 0){
     if(isReverse) {
-      LeftWheels.spin(reverse, Control.Axis3.value(), percent);
+      RightWheels.spin(reverse, Control.Axis3.value(), percent);
     } else {
       LeftWheels.spin(forward, Control.Axis3.value(), percent);
     }
-    } 
-  else {
+  } else {
     LeftWheels.stop(hold);
   }
 }
 
 void rightMovement() {
-  if(Control.Axis2.value() !=0) {
-    if(isReverse){
-      RightWheels.spin(reverse, Control.Axis2.value(), percent);
-    }else {
+  if(Control.Axis2.value() != 0) {
+    if(isReverse) {
+      LeftWheels.spin(reverse, Control.Axis2.value(), percent);
+    } else {
       RightWheels.spin(forward, Control.Axis2.value(), percent);
     }
   } else {
@@ -149,8 +158,8 @@ void usercontrol(void) {
   BackPincers.setMaxTorque(100, percent);
   while (1) {
     changeMovement();
-    rightMovement();
     leftMovement();
+    rightMovement();
     frontPincersMovement();
     backPincersMovement();
 

@@ -26,9 +26,10 @@ motor_group FrontPincers = motor_group(FrontLeftPincer, FrontRightPincer);
 bumper FrontButton = bumper(Brain.ThreeWirePort.A);
 // Drivetrain & Inertial Sensor
 inertial InertialSensor = inertial(PORT19);
-smartdrive Drivetrain = smartdrive(LeftWheels, RightWheels, InertialSensor, 319.19, 304.8, 304.8, mm, 1.6);
+smartdrive Drivetrain = smartdrive(LeftWheels, RightWheels, InertialSensor, 319.185806, 320, 280, mm, 1.6);
 
 bool isReverse = false;
+bool buttonPressed = false;
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
 /*---------------------------------------------------------------------------*/
@@ -40,6 +41,11 @@ void pre_auton(void) {
 /*                              Autonomous Task                              */
 /*---------------------------------------------------------------------------*/
 
+void changeVelocity(int v) {
+  RightWheels.setVelocity(v, percent);
+  LeftWheels.setVelocity(v, percent);
+}
+
 void autonomousYellowGoal() {
   FrontPincers.spinFor(reverse, 340, degrees);
   Drivetrain.drive(forward);
@@ -47,34 +53,38 @@ void autonomousYellowGoal() {
 
 void autonomousBackYellowGoal() {
   while(1) {
-      Control.Screen.print(RightWheels.rotation(degrees));
-      Control.Screen.newLine();
     if(FrontButton.pressing() || RightWheels.rotation(degrees) > 800) {
       Drivetrain.stop();
       wait(250, msec);
       FrontPincers.spinFor(forward, 140, degrees);
-      Drivetrain.driveFor(reverse, 50, inches);
+      changeVelocity(50);
+      Drivetrain.driveFor(reverse, 35, inches);
+
       break;
     }
   }
 }
 
 void autonomousPlatform() {
-  Drivetrain.turnFor(-93, degrees);
-  Drivetrain.driveFor(forward, 70, inches);
-  Drivetrain.turnFor(-100, degrees);
+  Drivetrain.turnToHeading(270, degrees);
+  changeVelocity(50);
+  Drivetrain.driveFor(forward, 100, inches);
+  Drivetrain.turnToHeading(180, degrees);
   Drivetrain.driveFor(forward, 10, inches);
+  Drivetrain.turnToHeading(270, degrees);
+  BackPincers.spinFor(forward, 305, degrees);
+  Drivetrain.driveFor(reverse, 30, inches);
+
 }
 
 void autonomous(void) {
-  LeftWheels.setVelocity(75, percent);
-  RightWheels.setVelocity(75, percent);
+  changeVelocity(75);
   FrontPincers.setVelocity(100, percent);
   RightWheels.resetRotation();
   LeftWheels.resetRotation();
   autonomousYellowGoal();
   autonomousBackYellowGoal();
-  //autonomousPlatform();
+  autonomousPlatform();
 }
 /*---------------------------------------------------------------------------*/
 /*                              User Control Task                            */

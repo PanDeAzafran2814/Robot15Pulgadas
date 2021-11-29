@@ -30,6 +30,7 @@ smartdrive Drivetrain = smartdrive(LeftWheels, RightWheels, InertialSensor, 319.
 
 bool isReverse = false;
 bool buttonPressed = false;
+
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
 /*---------------------------------------------------------------------------*/
@@ -46,8 +47,24 @@ void changeVelocity(int v) {
   LeftWheels.setVelocity(v, percent);
 }
 
-void autonomousYellowGoal() {
+void turnDownPincers() {
   FrontPincers.spinFor(reverse, 340, degrees);
+}
+
+int myThreadCallback() {
+  turnDownPincers();
+    // Debes dormir los hilos utilizando el comando 'this_thread::sleep_for(unit in
+    // mseg)' para evitar que este hilo utilice todos los recursos de la CPU
+    // recursos de la CPU.
+    this_thread::sleep_for(25);
+  
+  // El callback de un hilo debe devolver un int, aunque el código nunca
+  // llegue aquí. Debe devolver un int aquí. Los hilos pueden salir, pero este no lo hace.
+  return 0;
+}
+
+void autonomousYellowGoal() {
+  thread myThread = thread(myThreadCallback);
   Drivetrain.drive(forward);
 }
 
@@ -78,7 +95,7 @@ void autonomousPlatform() {
 }
 
 void autonomous(void) {
-  changeVelocity(75);
+  changeVelocity(100);
   FrontPincers.setVelocity(100, percent);
   RightWheels.resetRotation();
   LeftWheels.resetRotation();

@@ -76,7 +76,7 @@ int backPincersThread() {
 void autonomousYellowGoal() {
   thread myThread = thread(frontPincersThread);
   //thread mySecondThread = thread(backPincersThread);
-  Drivetrain.driveFor(forward,10,inches);
+  Drivetrain.drive(forward);
 }
 
 void turnBack() {

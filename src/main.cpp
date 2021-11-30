@@ -30,7 +30,7 @@ smartdrive Drivetrain = smartdrive(LeftWheels, RightWheels, InertialSensor, 319.
 
 bool isReverse = false;
 bool buttonPressed = false;
-
+int count = 0;
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
 /*---------------------------------------------------------------------------*/
@@ -51,7 +51,11 @@ void turnDownPincers() {
   FrontPincers.spinFor(reverse, 340, degrees);
 }
 
-int myThreadCallback() {
+void turnDownOtherPincers() {
+  BackPincers.spinFor(forward, 300, degrees);
+}
+
+int frontPincersThread() {
   turnDownPincers();
     // Debes dormir los hilos utilizando el comando 'this_thread::sleep_for(unit in
     // mseg)' para evitar que este hilo utilice todos los recursos de la CPU
@@ -63,20 +67,31 @@ int myThreadCallback() {
   return 0;
 }
 
+int backPincersThread() {
+  turnDownOtherPincers();
+  this_thread::sleep_for(25);
+  return 0;
+}
+
 void autonomousYellowGoal() {
-  thread myThread = thread(myThreadCallback);
-  Drivetrain.drive(forward);
+  thread myThread = thread(frontPincersThread);
+  //thread mySecondThread = thread(backPincersThread);
+  Drivetrain.driveFor(forward,10,inches);
+}
+
+void turnBack() {
+  Drivetrain.stop();
+  wait(250, msec);
+  FrontPincers.spinFor(forward, 140, degrees);
+  changeVelocity(50);
+  Drivetrain.driveFor(reverse, 35, inches);
 }
 
 void autonomousBackYellowGoal() {
   while(1) {
-    if(FrontButton.pressing() || RightWheels.rotation(degrees) > 800) {
-      Drivetrain.stop();
-      wait(250, msec);
-      FrontPincers.spinFor(forward, 140, degrees);
-      changeVelocity(50);
-      Drivetrain.driveFor(reverse, 35, inches);
-
+    FrontButton.pressed(turnBack);
+    if(RightWheels.rotation(degrees) > 800) {
+      turnBack();
       break;
     }
   }
@@ -97,6 +112,7 @@ void autonomousPlatform() {
 void autonomous(void) {
   changeVelocity(100);
   FrontPincers.setVelocity(100, percent);
+  BackPincers.setVelocity(100, percent);
   RightWheels.resetRotation();
   LeftWheels.resetRotation();
   autonomousYellowGoal();

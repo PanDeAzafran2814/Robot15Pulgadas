@@ -165,9 +165,9 @@ void leftMovement() {
 void rightMovement() {
   if(Control.Axis2.value() != 0) {
     if(isReverse) {
-      LeftWheels.spin(reverse, Control.Axis2.value() * getVelocity(), percent);
+      LeftWheels.spin(reverse, getVelocity(Control.Axis2.value()), percent);
     } else {
-      RightWheels.spin(forward, Control.Axis2.value() * getVelocity(), percent);
+      RightWheels.spin(forward, getVelocity(Control.Axis2.value()), percent);
     }
   } else {
     RightWheels.stop(hold);

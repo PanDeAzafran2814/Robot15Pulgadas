@@ -30,73 +30,78 @@ smartdrive Drivetrain = smartdrive(LeftWheels, RightWheels, InertialSensor, 319.
 
 bool isReverse = false;
 bool buttonPressed = false;
+bool lowVelocity = false;
 int count = 0;
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
 /*---------------------------------------------------------------------------*/
 
 void pre_auton(void) {
+  InertialSensor.calibrate();
   vexcodeInit();
 }
 /*---------------------------------------------------------------------------*/
 /*                              Autonomous Task                              */
 /*---------------------------------------------------------------------------*/
 
+// Función cambiar velocidad
 void changeVelocity(int v) {
   RightWheels.setVelocity(v, percent);
   LeftWheels.setVelocity(v, percent);
+  Drivetrain.setTurnVelocity(v, percent);
+  Drivetrain.setDriveVelocity(v, percent);
+  RightWheels.setMaxTorque(v, percent);
+  LeftWheels.setMaxTorque(v,percent);
 }
 
+// Instrucciones bajar los brazos
 void turnDownPincers() {
   FrontPincers.spinFor(reverse, 340, degrees);
 }
 
-void turnDownOtherPincers() {
-  BackPincers.spinFor(forward, 300, degrees);
-}
-
+// Función Multithread
 int frontPincersThread() {
   turnDownPincers();
-    // Debes dormir los hilos utilizando el comando 'this_thread::sleep_for(unit in
-    // mseg)' para evitar que este hilo utilice todos los recursos de la CPU
-    // recursos de la CPU.
-    this_thread::sleep_for(25);
-  
-  // El callback de un hilo debe devolver un int, aunque el código nunca
-  // llegue aquí. Debe devolver un int aquí. Los hilos pueden salir, pero este no lo hace.
-  return 0;
-}
-
-int backPincersThread() {
-  turnDownOtherPincers();
   this_thread::sleep_for(25);
+  
   return 0;
 }
 
+// Instrucciones llegar avanzar al plato amarillo
 void autonomousYellowGoal() {
   thread myThread = thread(frontPincersThread);
   //thread mySecondThread = thread(backPincersThread);
   Drivetrain.drive(forward);
 }
 
+// Ejecutar para irse hacia atrás
 void turnBack() {
   Drivetrain.stop();
   wait(250, msec);
-  FrontPincers.spinFor(forward, 140, degrees);
-  changeVelocity(50);
-  Drivetrain.driveFor(reverse, 35, inches);
+  FrontPincers.spinFor(forward, 100, degrees);
+  //Drivetrain.turnToHeading(0, degrees);
+  Drivetrain.driveFor(reverse, 38, inches);
+  buttonPressed = true;
 }
 
+// Instrucciones regresar con el plato amarillo
 void autonomousBackYellowGoal() {
   while(1) {
-    FrontButton.pressed(turnBack);
-    if(RightWheels.rotation(degrees) > 800) {
+    if(FrontButton.pressing() || RightWheels.rotation(degrees) > 800) {
       turnBack();
       break;
     }
   }
 }
-
+// Instrucciones para agarrar el plato del win point
+void autonomousWinPoint() {
+  Drivetrain.turnToHeading(270, degrees);
+  Drivetrain.driveFor(forward, 8, inches);
+  BackPincers.spinFor(forward, 340, degrees);
+  Drivetrain.driveFor(reverse, 15, inches);
+  BackPincers.spinFor(reverse, 140, degrees);
+}
+// Instrucciones para llegar llegar a la plataforma
 void autonomousPlatform() {
   Drivetrain.turnToHeading(270, degrees);
   changeVelocity(50);
@@ -108,7 +113,7 @@ void autonomousPlatform() {
   Drivetrain.driveFor(reverse, 30, inches);
 
 }
-
+// Main Autonomo
 void autonomous(void) {
   changeVelocity(100);
   FrontPincers.setVelocity(100, percent);
@@ -117,7 +122,8 @@ void autonomous(void) {
   LeftWheels.resetRotation();
   autonomousYellowGoal();
   autonomousBackYellowGoal();
-  autonomousPlatform();
+  autonomousWinPoint();
+  //autonomousPlatform();
 }
 /*---------------------------------------------------------------------------*/
 /*                              User Control Task                            */
@@ -132,12 +138,24 @@ void changeMovement() {
   }
 }
 
+void changeUserVelocity() {
+  lowVelocity = !lowVelocity;
+}
+
+float getVelocity(float v) {
+  if(lowVelocity) {
+    return v * 0.1;
+  } else {
+    return v;
+  }
+}
+
 void leftMovement() {
   if(Control.Axis3.value() != 0){
     if(isReverse) {
-      RightWheels.spin(reverse, Control.Axis3.value(), percent);
+      RightWheels.spin(reverse, getVelocity(Control.Axis3.value()), percent);
     } else {
-      LeftWheels.spin(forward, Control.Axis3.value(), percent);
+      LeftWheels.spin(forward, getVelocity(Control.Axis3.value()), percent);
     }
   } else {
     LeftWheels.stop(hold);
@@ -147,9 +165,9 @@ void leftMovement() {
 void rightMovement() {
   if(Control.Axis2.value() != 0) {
     if(isReverse) {
-      LeftWheels.spin(reverse, Control.Axis2.value(), percent);
+      LeftWheels.spin(reverse, Control.Axis2.value() * getVelocity(), percent);
     } else {
-      RightWheels.spin(forward, Control.Axis2.value(), percent);
+      RightWheels.spin(forward, Control.Axis2.value() * getVelocity(), percent);
     }
   } else {
     RightWheels.stop(hold);
@@ -209,7 +227,7 @@ void usercontrol(void) {
     rightMovement();
     frontPincersMovement();
     backPincersMovement();
-
+    Control.ButtonA.pressed(changeUserVelocity);
     wait(20, msec);
   }
 }

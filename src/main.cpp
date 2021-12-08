@@ -66,23 +66,35 @@ void initConfig() {
 // Bajar brazos para plato rojo
 void goToRedAndYellowGoals() {
   FrontPincers.spinFor(reverse, 340, degrees);
-  Drivetrain.driveFor(forward, 11, inches);
+  Drivetrain.driveFor(forward, 13, inches);
   FrontPincers.spinFor(forward, 120, degrees);
-  Drivetrain.driveFor(reverse, 11, inches);
+  Drivetrain.driveFor(reverse, 13, inches);
   Drivetrain.turnToHeading(270, degrees);
   Drivetrain.driveFor(forward, 15, inches);
   Drivetrain.turnToHeading(90, degrees);
-  Drivetrain.driveFor(reverse, 10, inches);
-  BackPincers.spinFor(forward, 340, degrees);
+  BackPincers.spinFor(forward, 330, degrees);
   Drivetrain.driveFor(reverse, 40, inches);
-  BackPincers.spinFor(reverse, 120, degrees);
+  BackPincers.spinFor(reverse, 130, degrees);
   Drivetrain.driveFor(reverse, 40, inches);
 }
 
+void blueGoal() {
+  BackPincers.spinFor(forward, 120, degrees);
+  Drivetrain.driveFor(forward, 10, inches);
+  Drivetrain.turnToHeading(0, degrees);
+  Drivetrain.driveFor(reverse, 30, inches);
+  BackPincers.spinFor(reverse, 110, degrees);
+  Drivetrain.driveFor(forward, 40, inches);
+  FrontPincers.spinFor(reverse, 110, degrees);
+  Drivetrain.driveFor(reverse, 10, inches);
+  Drivetrain.turnToHeading(90, degrees);
+  Drivetrain.driveFor(forward, 60, inches);
+}
 // Main Autonomo
 void autonomous(void) {
   initConfig();
   goToRedAndYellowGoals();
+  blueGoal();
 }
 /*---------------------------------------------------------------------------*/
 /*                              User Control Task                            */

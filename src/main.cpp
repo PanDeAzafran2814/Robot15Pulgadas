@@ -54,14 +54,10 @@ void changeVelocity(int v) {
   LeftWheels.setMaxTorque(v,percent);
 }
 
-// Instrucciones bajar los brazos
-void turnDownPincers() {
-  FrontPincers.spinFor(reverse, 340, degrees);
-}
 
 // Función Multithread
 int frontPincersThread() {
-  turnDownPincers();
+  
   this_thread::sleep_for(25);
   
   return 0;
@@ -74,45 +70,7 @@ void autonomousYellowGoal() {
   Drivetrain.drive(forward);
 }
 
-// Ejecutar para irse hacia atrás
-void turnBack() {
-  Drivetrain.stop();
-  wait(250, msec);
-  FrontPincers.spinFor(forward, 100, degrees);
-  //Drivetrain.turnToHeading(0, degrees);
-  Drivetrain.driveFor(reverse, 38, inches);
-  buttonPressed = true;
-}
 
-// Instrucciones regresar con el plato amarillo
-void autonomousBackYellowGoal() {
-  while(1) {
-    if(FrontButton.pressing() || RightWheels.rotation(degrees) > 800) {
-      turnBack();
-      break;
-    }
-  }
-}
-// Instrucciones para agarrar el plato del win point
-void autonomousWinPoint() {
-  Drivetrain.turnToHeading(270, degrees);
-  Drivetrain.driveFor(forward, 8, inches);
-  BackPincers.spinFor(forward, 340, degrees);
-  Drivetrain.driveFor(reverse, 15, inches);
-  BackPincers.spinFor(reverse, 140, degrees);
-}
-// Instrucciones para llegar llegar a la plataforma
-void autonomousPlatform() {
-  Drivetrain.turnToHeading(270, degrees);
-  changeVelocity(50);
-  Drivetrain.driveFor(forward, 100, inches);
-  Drivetrain.turnToHeading(180, degrees);
-  Drivetrain.driveFor(forward, 10, inches);
-  Drivetrain.turnToHeading(270, degrees);
-  BackPincers.spinFor(forward, 305, degrees);
-  Drivetrain.driveFor(reverse, 30, inches);
-
-}
 // Main Autonomo
 void autonomous(void) {
   changeVelocity(100);
@@ -121,9 +79,7 @@ void autonomous(void) {
   RightWheels.resetRotation();
   LeftWheels.resetRotation();
   autonomousYellowGoal();
-  autonomousBackYellowGoal();
-  autonomousWinPoint();
-  //autonomousPlatform();
+  
 }
 /*---------------------------------------------------------------------------*/
 /*                              User Control Task                            */

@@ -139,7 +139,12 @@ void changeMovement() {
 }
 
 void changeUserVelocity() {
-  lowVelocity = !lowVelocity;
+  if(Control.ButtonA.pressing()) {
+    lowVelocity = true;
+  }
+  if(Control.ButtonB.pressing()) {
+    lowVelocity = false;
+  }
 }
 
 float getVelocity(float v) {
@@ -223,11 +228,11 @@ void usercontrol(void) {
   BackPincers.setMaxTorque(100, percent);
   while (1) {
     changeMovement();
+    changeUserVelocity();
     leftMovement();
     rightMovement();
     frontPincersMovement();
     backPincersMovement();
-    Control.ButtonA.pressed(changeUserVelocity);
     wait(20, msec);
   }
 }

@@ -48,38 +48,41 @@ void pre_auton(void) {
 void changeVelocity(int v) {
   RightWheels.setVelocity(v, percent);
   LeftWheels.setVelocity(v, percent);
-  Drivetrain.setTurnVelocity(v, percent);
   Drivetrain.setDriveVelocity(v, percent);
   RightWheels.setMaxTorque(v, percent);
   LeftWheels.setMaxTorque(v,percent);
 }
 
-
-// Función Multithread
-int frontPincersThread() {
-  
-  this_thread::sleep_for(25);
-  
-  return 0;
-}
-
-// Instrucciones llegar avanzar al plato amarillo
-void autonomousYellowGoal() {
-  thread myThread = thread(frontPincersThread);
-  //thread mySecondThread = thread(backPincersThread);
-  Drivetrain.drive(forward);
-}
-
-
-// Main Autonomo
-void autonomous(void) {
+// Configuración inicial del robot
+void initConfig() {
   changeVelocity(100);
   FrontPincers.setVelocity(100, percent);
   BackPincers.setVelocity(100, percent);
+  Drivetrain.setTurnVelocity(40, percent);
   RightWheels.resetRotation();
   LeftWheels.resetRotation();
-  autonomousYellowGoal();
-  
+}
+
+// Bajar brazos para plato rojo
+void goToRedAndYellowGoals() {
+  FrontPincers.spinFor(reverse, 340, degrees);
+  Drivetrain.driveFor(forward, 11, inches);
+  FrontPincers.spinFor(forward, 120, degrees);
+  Drivetrain.driveFor(reverse, 11, inches);
+  Drivetrain.turnToHeading(270, degrees);
+  Drivetrain.driveFor(forward, 15, inches);
+  Drivetrain.turnToHeading(90, degrees);
+  Drivetrain.driveFor(reverse, 10, inches);
+  BackPincers.spinFor(forward, 340, degrees);
+  Drivetrain.driveFor(reverse, 40, inches);
+  BackPincers.spinFor(reverse, 120, degrees);
+  Drivetrain.driveFor(reverse, 40, inches);
+}
+
+// Main Autonomo
+void autonomous(void) {
+  initConfig();
+  goToRedAndYellowGoals();
 }
 /*---------------------------------------------------------------------------*/
 /*                              User Control Task                            */

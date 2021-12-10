@@ -50,8 +50,6 @@ void changeVelocity(int v) {
   LeftWheels.setVelocity(v, percent);
   Drivetrain.setTurnVelocity(v, percent);
   Drivetrain.setDriveVelocity(v, percent);
-  RightWheels.setMaxTorque(v, percent);
-  LeftWheels.setMaxTorque(v,percent);
 }
 
 // Instrucciones bajar los brazos
@@ -70,7 +68,6 @@ int frontPincersThread() {
 // Instrucciones llegar avanzar al plato amarillo
 void autonomousYellowGoal() {
   thread myThread = thread(frontPincersThread);
-  //thread mySecondThread = thread(backPincersThread);
   Drivetrain.drive(forward);
 }
 
@@ -79,7 +76,6 @@ void turnBack() {
   Drivetrain.stop();
   wait(250, msec);
   FrontPincers.spinFor(forward, 100, degrees);
-  //Drivetrain.turnToHeading(0, degrees);
   Drivetrain.driveFor(reverse, 38, inches);
   buttonPressed = true;
 }
@@ -111,11 +107,12 @@ void autonomousPlatform() {
   Drivetrain.turnToHeading(270, degrees);
   BackPincers.spinFor(forward, 305, degrees);
   Drivetrain.driveFor(reverse, 30, inches);
-
 }
 // Main Autonomo
 void autonomous(void) {
   changeVelocity(100);
+  RightWheels.setMaxTorque(100, percent);
+  LeftWheels.setMaxTorque(100,percent);
   FrontPincers.setVelocity(100, percent);
   BackPincers.setVelocity(100, percent);
   RightWheels.resetRotation();

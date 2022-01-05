@@ -29,7 +29,6 @@ inertial InertialSensor = inertial(PORT19);
 smartdrive Drivetrain = smartdrive(LeftWheels, RightWheels, InertialSensor, 319.185806, 320, 280, mm, 1.6);
 
 bool isReverse = false;
-bool buttonPressed = false;
 bool lowVelocity = false;
 int count = 0;
 /*---------------------------------------------------------------------------*/
@@ -52,14 +51,9 @@ void changeVelocity(int v) {
   Drivetrain.setDriveVelocity(v, percent);
 }
 
-// Instrucciones bajar los brazos
-void turnDownPincers() {
-  FrontPincers.spinFor(reverse, 340, degrees);
-}
-
-// Función Multithread
+// Función Multithread bajar los brazos
 int frontPincersThread() {
-  turnDownPincers();
+  FrontPincers.spinFor(reverse, 340, degrees);
   this_thread::sleep_for(25);
   
   return 0;
@@ -71,20 +65,14 @@ void autonomousYellowGoal() {
   Drivetrain.drive(forward);
 }
 
-// Ejecutar para irse hacia atrás
-void turnBack() {
-  Drivetrain.stop();
-  wait(250, msec);
-  FrontPincers.spinFor(forward, 100, degrees);
-  Drivetrain.driveFor(reverse, 38, inches);
-  buttonPressed = true;
-}
-
 // Instrucciones regresar con el plato amarillo
 void autonomousBackYellowGoal() {
   while(1) {
     if(FrontButton.pressing() || RightWheels.rotation(degrees) > 800) {
-      turnBack();
+      Drivetrain.stop();
+      wait(250, msec);
+      FrontPincers.spinFor(forward, 100, degrees);
+      Drivetrain.driveFor(reverse, 38, inches);
       break;
     }
   }

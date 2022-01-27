@@ -5,6 +5,8 @@ using namespace vex;
 competition Competition;
 controller Control = controller(primary);
 brain Brain;
+// Up Pincer
+motor UpPincer = motor(PORT17, ratio18_1, false);
 // Front Pincers
 motor FrontLeftPincer = motor(PORT5, ratio36_1, false);
 motor FrontRightPincer = motor(PORT6, ratio36_1, true);
@@ -13,24 +15,26 @@ motor BackLeftPincer = motor(PORT15, ratio36_1, false);
 motor BackRightPincer =motor(PORT16, ratio36_1, true);
 // Right Wheels
 motor FrontRightWheel = motor(PORT10, ratio18_1, true);
+motor MiddleRightWheel = motor(PORT19, ratio18_1, false);
 motor BackRightWheel = motor(PORT20, ratio18_1, true);
 // Left Wheels
 motor FrontLeftWheel = motor(PORT1, ratio18_1, false);
+motor MiddleLeftWheel = motor(PORT12, ratio18_1, true);
 motor BackLeftWheel = motor(PORT11, ratio18_1, false);
 // Motor Groups
-motor_group LeftWheels = motor_group(FrontLeftWheel, BackLeftWheel);
-motor_group RightWheels = motor_group(BackRightWheel, FrontRightWheel);
+motor_group LeftWheels = motor_group(FrontLeftWheel, MiddleLeftWheel, BackLeftWheel);
+motor_group RightWheels = motor_group(BackRightWheel, MiddleRightWheel, FrontRightWheel);
 motor_group BackPincers = motor_group(BackLeftPincer, BackRightPincer);
 motor_group FrontPincers = motor_group(FrontLeftPincer, FrontRightPincer);
 // Buttons
 bumper FrontButton = bumper(Brain.ThreeWirePort.A);
 // Drivetrain & Inertial Sensor
-inertial InertialSensor = inertial(PORT19);
+inertial InertialSensor = inertial(PORT18);
 smartdrive Drivetrain = smartdrive(LeftWheels, RightWheels, InertialSensor, 319.185806, 320, 280, mm, 1.6);
 
 bool isReverse = false;
 bool lowVelocity = false;
-int count = 0;
+
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
 /*---------------------------------------------------------------------------*/
@@ -123,12 +127,14 @@ void changeMovement() {
   }
 }
 
-void changeUserVelocity() {
+void manageUpPincer() {
   if(Control.ButtonA.pressing()) {
-    lowVelocity = true;
+    UpPincer.spin(forward, 100, percent);
   }
-  if(Control.ButtonB.pressing()) {
-    lowVelocity = false;
+  else if(Control.ButtonB.pressing()) {
+    UpPincer.spin(reverse, 100, percent);
+  } else {
+    UpPincer.stop(hold);
   }
 }
 
@@ -213,7 +219,7 @@ void usercontrol(void) {
   BackPincers.setMaxTorque(100, percent);
   while (1) {
     changeMovement();
-    changeUserVelocity();
+    manageUpPincer();
     leftMovement();
     rightMovement();
     frontPincersMovement();

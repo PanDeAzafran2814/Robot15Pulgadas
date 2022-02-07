@@ -30,7 +30,7 @@ motor_group FrontPincers = motor_group(FrontLeftPincer, FrontRightPincer);
 bumper FrontButton = bumper(Brain.ThreeWirePort.A);
 // Drivetrain & Inertial Sensor
 inertial InertialSensor = inertial(PORT18);
-smartdrive Drivetrain = smartdrive(LeftWheels, RightWheels, InertialSensor, 319.185806, 320, 280, mm, 1.6);
+smartdrive Drivetrain = smartdrive(LeftWheels, RightWheels, InertialSensor, 299.24, 292.1, 279.4, mm, 1.2);
 
 bool isReverse = false;
 bool lowVelocity = false;
@@ -47,6 +47,16 @@ void pre_auton(void) {
 /*                              Autonomous Task                              */
 /*---------------------------------------------------------------------------*/
 
+// Configuraciones iniciales del robot
+void initConfig(int v, int t) {
+  RightWheels.setMaxTorque(t, percent);
+  LeftWheels.setMaxTorque(t,percent);
+  FrontPincers.setVelocity(v, percent);
+  BackPincers.setVelocity(v, percent);
+  RightWheels.resetRotation();
+  LeftWheels.resetRotation();
+}
+
 // Función cambiar velocidad
 void changeVelocity(int v) {
   RightWheels.setVelocity(v, percent);
@@ -57,7 +67,7 @@ void changeVelocity(int v) {
 
 // Función Multithread bajar los brazos
 int frontPincersThread() {
-  FrontPincers.spinFor(reverse, 340, degrees);
+  FrontPincers.spinFor(reverse, 750, degrees);
   this_thread::sleep_for(25);
   
   return 0;
@@ -72,47 +82,32 @@ void autonomousYellowGoal() {
 // Instrucciones regresar con el plato amarillo
 void autonomousBackYellowGoal() {
   while(1) {
-    if(FrontButton.pressing() || RightWheels.rotation(degrees) > 800) {
+    if(FrontButton.pressing() || RightWheels.rotation(degrees) > 2300) {
       Drivetrain.stop();
       wait(250, msec);
-      FrontPincers.spinFor(forward, 100, degrees);
-      Drivetrain.driveFor(reverse, 38, inches);
+      FrontPincers.spinFor(forward, 300, degrees);
+      UpPincer.spinFor(forward, 450, degrees);
+      changeVelocity(50);
+      Drivetrain.driveFor(reverse, 55, inches);
       break;
     }
   }
 }
-// Instrucciones para agarrar el plato del win point
-void autonomousWinPoint() {
-  Drivetrain.turnToHeading(270, degrees);
-  Drivetrain.driveFor(forward, 8, inches);
-  BackPincers.spinFor(forward, 340, degrees);
-  Drivetrain.driveFor(reverse, 15, inches);
-  BackPincers.spinFor(reverse, 140, degrees);
+
+void autonomousTeamGoal() {
+  Drivetrain.turnFor(left, 40, degrees);
+  BackPincers.spinFor(forward, 750, degrees);
+  Drivetrain.driveFor(reverse, 10, inches);
+  BackPincers.spinFor(reverse, 300, degrees);
 }
-// Instrucciones para llegar llegar a la plataforma
-void autonomousPlatform() {
-  Drivetrain.turnToHeading(270, degrees);
-  changeVelocity(50);
-  Drivetrain.driveFor(forward, 100, inches);
-  Drivetrain.turnToHeading(180, degrees);
-  Drivetrain.driveFor(forward, 10, inches);
-  Drivetrain.turnToHeading(270, degrees);
-  BackPincers.spinFor(forward, 305, degrees);
-  Drivetrain.driveFor(reverse, 30, inches);
-}
+
 // Main Autonomo
 void autonomous(void) {
+  initConfig(100, 100);
   changeVelocity(100);
-  RightWheels.setMaxTorque(100, percent);
-  LeftWheels.setMaxTorque(100,percent);
-  FrontPincers.setVelocity(100, percent);
-  BackPincers.setVelocity(100, percent);
-  RightWheels.resetRotation();
-  LeftWheels.resetRotation();
   autonomousYellowGoal();
   autonomousBackYellowGoal();
-  autonomousWinPoint();
-  //autonomousPlatform();
+  autonomousTeamGoal();
 }
 /*---------------------------------------------------------------------------*/
 /*                              User Control Task                            */
@@ -213,8 +208,8 @@ void backPincersMovement() {
 void usercontrol(void) {
   LeftWheels.setVelocity(100, percent);
   RightWheels.setVelocity(100, percent);
-  FrontPincers.setVelocity(80, percent);
-  BackPincers.setVelocity(80, percent);
+  FrontPincers.setVelocity(100, percent);
+  BackPincers.setVelocity(100, percent);
   FrontPincers.setMaxTorque(100, percent);
   BackPincers.setMaxTorque(100, percent);
   while (1) {

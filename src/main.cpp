@@ -6,10 +6,10 @@ competition Competition;
 controller Control = controller(primary);
 brain Brain;
 // Up Pincer
-motor UpPincer = motor(PORT17, ratio18_1, false);
+motor Banda = motor(PORT17, ratio18_1, false);
 // Front Pincers
-motor FrontLeftPincer = motor(PORT5, ratio36_1, false);
-motor FrontRightPincer = motor(PORT6, ratio36_1, true);
+motor FrontLeftPincer = motor(PORT5, ratio36_1, true);
+motor FrontRightPincer = motor(PORT6, ratio36_1, false);
 // Back Pincers
 motor BackLeftPincer = motor(PORT15, ratio36_1, false);
 motor BackRightPincer =motor(PORT16, ratio36_1, true);
@@ -17,13 +17,15 @@ motor BackRightPincer =motor(PORT16, ratio36_1, true);
 motor FrontRightWheel = motor(PORT10, ratio18_1, true);
 motor MiddleRightWheel = motor(PORT19, ratio18_1, false);
 motor BackRightWheel = motor(PORT20, ratio18_1, true);
+motor UpRightWheel = motor(PORT9, ratio18_1, true);
 // Left Wheels
 motor FrontLeftWheel = motor(PORT1, ratio18_1, false);
 motor MiddleLeftWheel = motor(PORT12, ratio18_1, true);
 motor BackLeftWheel = motor(PORT11, ratio18_1, false);
+motor UpLeftWheel = motor(PORT2, ratio18_1, false);
 // Motor Groups
-motor_group LeftWheels = motor_group(FrontLeftWheel, MiddleLeftWheel, BackLeftWheel);
-motor_group RightWheels = motor_group(BackRightWheel, MiddleRightWheel, FrontRightWheel);
+motor_group LeftWheels = motor_group(FrontLeftWheel, MiddleLeftWheel, BackLeftWheel, UpLeftWheel);
+motor_group RightWheels = motor_group(BackRightWheel, MiddleRightWheel, FrontRightWheel, UpRightWheel);
 motor_group BackPincers = motor_group(BackLeftPincer, BackRightPincer);
 motor_group FrontPincers = motor_group(FrontLeftPincer, FrontRightPincer);
 // Buttons
@@ -34,6 +36,7 @@ smartdrive Drivetrain = smartdrive(LeftWheels, RightWheels, InertialSensor, 299.
 
 bool isReverse = false;
 bool lowVelocity = false;
+int bandaControl = 0;
 
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -86,7 +89,7 @@ void autonomousBackYellowGoal() {
       Drivetrain.stop();
       wait(250, msec);
       FrontPincers.spinFor(forward, 300, degrees);
-      UpPincer.spinFor(forward, 450, degrees);
+      Banda.spinFor(forward, 450, degrees);
       changeVelocity(50);
       Drivetrain.driveFor(reverse, 55, inches);
       break;
@@ -122,14 +125,24 @@ void changeMovement() {
   }
 }
 
-void manageUpPincer() {
+void manageBandaControl(){
+  if(bandaControl == 0) {
+    Banda.stop(hold);
+  } else if(bandaControl == 1) {
+    Banda.spin(forward, 85, percent);
+  } else if(bandaControl == 2) {
+    Banda.spin(reverse, 85, percent);
+  }
+}
+
+void manageBanda() {
   if(Control.ButtonA.pressing()) {
-    UpPincer.spin(forward, 100, percent);
+    bandaControl = 1;
   }
   else if(Control.ButtonB.pressing()) {
-    UpPincer.spin(reverse, 100, percent);
-  } else {
-    UpPincer.stop(hold);
+    bandaControl = 2;
+  } else if(Control.ButtonX.pressing()){
+    bandaControl = 0;
   }
 }
 
@@ -214,7 +227,8 @@ void usercontrol(void) {
   BackPincers.setMaxTorque(100, percent);
   while (1) {
     changeMovement();
-    manageUpPincer();
+    manageBandaControl();
+    manageBanda();
     leftMovement();
     rightMovement();
     frontPincersMovement();

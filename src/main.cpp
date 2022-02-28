@@ -68,49 +68,25 @@ void changeVelocity(int v) {
   Drivetrain.setDriveVelocity(v, percent);
 }
 
-// Función Multithread bajar los brazos
-int frontPincersThread() {
-  FrontPincers.spinFor(reverse, 750, degrees);
-  this_thread::sleep_for(25);
-  
-  return 0;
-}
 
-// Instrucciones llegar avanzar al plato amarillo
-void autonomousYellowGoal() {
-  thread myThread = thread(frontPincersThread);
-  Drivetrain.drive(forward);
-}
-
-// Instrucciones regresar con el plato amarillo
-void autonomousBackYellowGoal() {
-  while(1) {
-    if(FrontButton.pressing() || RightWheels.rotation(degrees) > 2300) {
-      Drivetrain.stop();
-      wait(250, msec);
-      FrontPincers.spinFor(forward, 300, degrees);
-      Banda.spinFor(forward, 450, degrees);
-      changeVelocity(50);
-      Drivetrain.driveFor(reverse, 55, inches);
-      break;
-    }
-  }
-}
-
-void autonomousTeamGoal() {
-  Drivetrain.turnFor(left, 40, degrees);
-  BackPincers.spinFor(forward, 750, degrees);
-  Drivetrain.driveFor(reverse, 10, inches);
-  BackPincers.spinFor(reverse, 300, degrees);
+void moveArmsThread() {
+  FrontPincers.spinFor(reverse, 400, degrees);
 }
 
 // Main Autonomo
 void autonomous(void) {
   initConfig(100, 100);
   changeVelocity(100);
-  autonomousYellowGoal();
-  autonomousBackYellowGoal();
-  autonomousTeamGoal();
+  thread handsThread = thread(moveArmsThread);
+  Drivetrain.driveFor(forward, 41, inches);
+  wait(150, msec);
+  changeVelocity(80);
+  FrontPincers.spinFor(forward, 180, degrees);
+  Drivetrain.driveFor(reverse, 30, inches);
+  Drivetrain.turnFor(left, 90, degrees);
+  BackPincers.spinFor(forward, 450, degrees);
+  Drivetrain.driveFor(reverse, 13, inches);
+  BackPincers.spinFor(reverse, 180, degrees);
 }
 /*---------------------------------------------------------------------------*/
 /*                              User Control Task                            */
@@ -146,20 +122,12 @@ void manageBanda() {
   }
 }
 
-float getVelocity(float v) {
-  if(lowVelocity) {
-    return v * 0.1;
-  } else {
-    return v;
-  }
-}
-
 void leftMovement() {
   if(Control.Axis3.value() != 0){
     if(isReverse) {
-      RightWheels.spin(reverse, getVelocity(Control.Axis3.value()), percent);
+      RightWheels.spin(reverse, Control.Axis3.value(), percent);
     } else {
-      LeftWheels.spin(forward, getVelocity(Control.Axis3.value()), percent);
+      LeftWheels.spin(forward, Control.Axis3.value(), percent);
     }
   } else {
     LeftWheels.stop(hold);
@@ -169,9 +137,9 @@ void leftMovement() {
 void rightMovement() {
   if(Control.Axis2.value() != 0) {
     if(isReverse) {
-      LeftWheels.spin(reverse, getVelocity(Control.Axis2.value()), percent);
+      LeftWheels.spin(reverse, Control.Axis2.value(), percent);
     } else {
-      RightWheels.spin(forward, getVelocity(Control.Axis2.value()), percent);
+      RightWheels.spin(forward, Control.Axis2.value(), percent);
     }
   } else {
     RightWheels.stop(hold);

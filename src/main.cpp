@@ -17,19 +17,19 @@ motor BackRightPincer =motor(PORT16, ratio36_1, true);
 motor FrontRightWheel = motor(PORT10, ratio18_1, true);
 motor MiddleRightWheel = motor(PORT19, ratio18_1, false);
 motor BackRightWheel = motor(PORT20, ratio18_1, true);
-motor UpRightWheel = motor(PORT9, ratio18_1, true);
+motor UpRightWheel = motor(PORT9, ratio18_1, false);
 // Left Wheels
 motor FrontLeftWheel = motor(PORT1, ratio18_1, false);
 motor MiddleLeftWheel = motor(PORT12, ratio18_1, true);
 motor BackLeftWheel = motor(PORT11, ratio18_1, false);
-motor UpLeftWheel = motor(PORT2, ratio18_1, false);
+motor UpLeftWheel = motor(PORT2, ratio18_1, true);
 // Motor Groups
 motor_group LeftWheels = motor_group(FrontLeftWheel, MiddleLeftWheel, BackLeftWheel, UpLeftWheel);
 motor_group RightWheels = motor_group(BackRightWheel, MiddleRightWheel, FrontRightWheel, UpRightWheel);
 motor_group BackPincers = motor_group(BackLeftPincer, BackRightPincer);
 motor_group FrontPincers = motor_group(FrontLeftPincer, FrontRightPincer);
 // Buttons
-bumper FrontButton = bumper(Brain.ThreeWirePort.A);
+digital_out FrontValve = digital_out(Brain.ThreeWirePort.A);
 // Drivetrain & Inertial Sensor
 inertial InertialSensor = inertial(PORT18);
 smartdrive Drivetrain = smartdrive(LeftWheels, RightWheels, InertialSensor, 299.24, 292.1, 279.4, mm, 1.2);
@@ -73,8 +73,7 @@ void moveArmsThread() {
   FrontPincers.spinFor(reverse, 400, degrees);
 }
 
-// Main Autonomo
-void autonomous(void) {
+void RafaAutonomo() {
   initConfig(100, 100);
   changeVelocity(100);
   thread handsThread = thread(moveArmsThread);
@@ -87,6 +86,11 @@ void autonomous(void) {
   BackPincers.spinFor(forward, 450, degrees);
   Drivetrain.driveFor(reverse, 13, inches);
   BackPincers.spinFor(reverse, 180, degrees);
+}
+
+// Main Autonomo
+void autonomous(void) {
+  
 }
 /*---------------------------------------------------------------------------*/
 /*                              User Control Task                            */
@@ -101,9 +105,18 @@ void changeMovement() {
   }
 }
 
+void valveManagement(){
+  if(Control.ButtonLeft.pressing()) {
+    FrontValve.set(0);
+  }
+  if(Control.ButtonRight.pressing()) {
+    FrontValve.set(1);
+  }
+}
+
 void manageBandaControl(){
   if(bandaControl == 0) {
-    Banda.stop(hold);
+    Banda.stop(hold);    
   } else if(bandaControl == 1) {
     Banda.spin(forward, 85, percent);
   } else if(bandaControl == 2) {
@@ -201,6 +214,7 @@ void usercontrol(void) {
     rightMovement();
     frontPincersMovement();
     backPincersMovement();
+    valveManagement();
     wait(20, msec);
   }
 }

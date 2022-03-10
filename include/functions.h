@@ -7,6 +7,9 @@ void initConfig(int v, int t) {
   BackPincers.setVelocity(v, percent);
   RightWheels.resetRotation();
   LeftWheels.resetRotation();
+  Drivetrain.setRotation(0, degrees);
+  FrontPincers.setRotation(0, degrees);
+  BackPincers.setRotation(0, degrees);
 }
 
 // Función cambiar velocidad
@@ -22,20 +25,20 @@ void moveArmsThread() {
 }
 
 void changeMovement() {
-  if(Control.ButtonDown.pressing()) {
+  if(Control.ButtonX.pressing()) {
     isReverse = true;
   }
-  if(Control.ButtonUp.pressing()) {
+  if(Control.ButtonB.pressing()) {
     isReverse = false;
   }
 }
 
 void valveManagement(){
-  if(Control.ButtonLeft.pressing()) {
-    FrontValve.set(0);
+  if(Control.ButtonA.pressing()) {
+    BackValve.set(0);
   }
-  if(Control.ButtonRight.pressing()) {
-    FrontValve.set(1);
+  if(Control.ButtonY.pressing()) {
+    BackValve.set(1);
   }
 }
 
@@ -50,12 +53,12 @@ void manageBandaControl(){
 }
 
 void manageBanda() {
-  if(Control.ButtonA.pressing()) {
+  if(Control.ButtonRight.pressing()) {
     bandaControl = 1;
   }
-  else if(Control.ButtonB.pressing()) {
+  else if(Control.ButtonLeft.pressing()) {
     bandaControl = 2;
-  } else if(Control.ButtonX.pressing()){
+  } else if(Control.ButtonUp.pressing()){
     bandaControl = 0;
   }
 }
@@ -121,5 +124,28 @@ void backPincersMovement() {
     } else {
       BackPincers.stop(hold);
     }
+  }
+}
+
+void useDistanceSensor(directionType direction,int Inches) {
+  bool enableDistance = true;
+  while(enableDistance){
+    if(direction == forward) {
+      if(DistanceSensor.objectDistance(inches) < Inches || !DistanceSensor.isObjectDetected()) {
+        Drivetrain.drive(forward);
+      } else {
+        Drivetrain.stop();
+        enableDistance = false;
+      }
+    }
+    if(direction == reverse) {
+      if(DistanceSensor.objectDistance(inches) > Inches || !DistanceSensor.isObjectDetected()) {
+        Drivetrain.drive(reverse);
+      } else {
+        Drivetrain.stop();
+        enableDistance = false;
+      }
+    }
+    
   }
 }

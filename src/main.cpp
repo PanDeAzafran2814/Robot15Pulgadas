@@ -16,52 +16,26 @@ void pre_auton(void) {
 // Configuraciones iniciales del robot
 
 
-// Main Autonomo
+// Main Skills
 void autonomous(void) {
-  initConfig(100, 100);
-  changeVelocity(100);
-  thread handsThread = thread(moveArmsThread);
-  
-  bool enableDistance = true;
-  while(enableDistance){
-    if(DistanceSensor.objectDistance(inches) < 50 || !DistanceSensor.isObjectDetected()) {
-      Drivetrain.drive(forward);
-    } else {
-      Drivetrain.stop();
-      enableDistance = false;
-    }
-  }
+  initConfig(100, 100); // Init config
+  changeVelocity(30); // Change velocity
+  BackValve.set(true);
+  BackPincers.spinFor(forward, 420, degrees); // Turn down front pincers
+  useDistanceSensor(reverse, 3); // Drive reverse 10 inches with distance sensor
   wait(150, msec);
-  changeVelocity(70);
+  BackPincers.spinFor(reverse, 230, degrees); // Pick up pincers to pick team goal
+  BackValve.set(false);
+  Drivetrain.driveFor(forward, 3, inches);
+  Drivetrain.turnFor(right, 85, degrees);
+  FrontPincers.spinFor(reverse, 380, degrees);
+  useDistanceSensor(forward, 60); // Drive forward 50 inches
   FrontPincers.spinFor(forward, 180, degrees);
-  enableDistance = true;
-  while(enableDistance){
-    if(DistanceSensor.objectDistance(inches) > 30 || !DistanceSensor.isObjectDetected()) {
-      Drivetrain.drive(reverse);
-    } else {
-      Drivetrain.stop();
-      enableDistance = false;
-    }
-  }
-  changeVelocity(30);
-  FrontValve.set(true);
-  Drivetrain.turnFor(left, 90, degrees);
-  BackPincers.spinFor(forward, 450, degrees);
-  Drivetrain.driveFor(reverse, 11, inches);
-  BackPincers.spinFor(reverse, 180, degrees);
+  Drivetrain.turnToHeading(270, degrees);
+  useDistanceSensor(reverse, 30);
 }
 
-void useDistanceSensor() {
-  bool enableDistance = true;
-  while(enableDistance){
-    if(DistanceSensor.objectDistance(inches) > 30 || !DistanceSensor.isObjectDetected()) {
-      Drivetrain.drive(reverse);
-    } else {
-      Drivetrain.stop();
-      enableDistance = false;
-    }
-  }
-}
+
 /*---------------------------------------------------------------------------*/
 /*                              User Control Task                            */
 /*---------------------------------------------------------------------------*/
@@ -74,8 +48,6 @@ void usercontrol(void) {
   FrontPincers.setMaxTorque(100, percent);
   BackPincers.setMaxTorque(100, percent);
   while (1) {
-    Control.Screen.print(DistanceSensor.objectDistance(inches));
-    Control.Screen.newLine();
     changeMovement();
     manageBandaControl();
     manageBanda();

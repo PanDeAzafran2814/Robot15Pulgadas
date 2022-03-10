@@ -29,7 +29,7 @@ motor_group RightWheels = motor_group(BackRightWheel, MiddleRightWheel, FrontRig
 motor_group BackPincers = motor_group(BackLeftPincer, BackRightPincer);
 motor_group FrontPincers = motor_group(FrontLeftPincer, FrontRightPincer);
 // Buttons
-digital_out FrontValve = digital_out(Brain.ThreeWirePort.A);
+digital_out BackValve = digital_out(Brain.ThreeWirePort.A);
 // Drivetrain & Inertial Sensor
 inertial InertialSensor = inertial(PORT18);
 distance DistanceSensor = distance(PORT3);
